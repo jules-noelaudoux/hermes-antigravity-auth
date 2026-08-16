@@ -124,22 +124,29 @@ def get_auth_credentials(account):
 
 # ── Model Mapping ─────────────────────────────────────────────
 MODEL_MAPPING = {
+    # Gemini 3.7 series (Hybrid reasoning with dynamic/thinking levels)
+    "gemini-3.7-flash": "gemini-3.5-flash-low",
+    "gemini-3.7-flash-thinking": "gemini-3.5-flash-low",
+
+    # Claude 4.6 series
+    "claude-opus-4-6-thinking": "claude-opus-4-6-thinking",
+    "claude-opus-4-6": "claude-opus-4-6-thinking",
+    "claude-sonnet-4-6-thinking": "claude-sonnet-4-6",
+    "claude-sonnet-4-6": "claude-sonnet-4-6",
+
+    # Gemini 3.5 & 3.1 & 2.5 series
+    "gemini-3.5-flash": "gemini-3.5-flash-low",
+    "gemini-3.1-pro-high": "gemini-3.1-pro-low",
+    "gemini-3.1-pro-low": "gemini-3.1-pro-low",
+    "gemini-3-flash": "gemini-3-flash",
+    "gemini-2.5-flash": "gemini-2.5-flash",
+    
     # Standard mappings
-    "claude-3-5-sonnet-latest": "claude-sonnet-4-6-thinking",
-    "claude-3-5-sonnet-20241022": "claude-sonnet-4-6-thinking",
+    "claude-3-5-sonnet-latest": "claude-sonnet-4-6",
+    "claude-3-5-sonnet-20241022": "claude-sonnet-4-6",
     "claude-3-5-sonnet-20240620": "claude-sonnet-4-6",
     "claude-3-opus-20240229": "claude-opus-4-6-thinking",
     "claude-3-5-haiku-latest": "claude-sonnet-4-6",
-    "gemini-3.5-flash": "gemini-3.5-flash-low",
-    "gemini-3-flash": "gemini-3-flash",
-    
-    # Direct Antigravity mappings
-    "claude-opus-4-6-thinking": "claude-opus-4-6-thinking",
-    "claude-opus-4-6": "claude-opus-4-6-thinking",
-    "claude-sonnet-4-6-thinking": "claude-sonnet-4-6-thinking",
-    "claude-sonnet-4-6": "claude-sonnet-4-6",
-    "gemini-3.1-pro-high": "gemini-3.1-pro-high",
-    "gemini-3.1-pro-low": "gemini-3.1-pro-low",
 }
 
 def translate_openai_to_gemini(messages):
@@ -215,10 +222,10 @@ class AntigravityProxyHandler(BaseHTTPRequestHandler):
             active_idx = 0
             
         # Resolve model
-        req_model = req_json.get("model", "gemini-3.5-flash")
+        req_model = req_json.get("model", "gemini-3.7-flash")
         is_claude = "claude" in req_model.lower()
         family = "claude" if is_claude else "gemini"
-        mapped_model = MODEL_MAPPING.get(req_model, "gemini-3.5-flash-low")
+        mapped_model = MODEL_MAPPING.get(req_model, req_model)
         
         success = False
         last_err = None
@@ -262,11 +269,13 @@ class AntigravityProxyHandler(BaseHTTPRequestHandler):
                 }
             }
             
-            wrapped_body = json.dumps({
-                "project": project_id,
+            req_dict = {
                 "model": mapped_model,
                 "request": gemini_body
-            }).encode("utf-8")
+            }
+            if project_id:
+                req_dict["project"] = project_id
+            wrapped_body = json.dumps(req_dict).encode("utf-8")
             
             headers = {
                 "Authorization": f"Bearer {token}",
@@ -298,8 +307,8 @@ class AntigravityProxyHandler(BaseHTTPRequestHandler):
                 err_text = he.read().decode('utf-8', errors='ignore')
                 last_err = f"Upstream HTTP {status_code} on {email}: {err_text}"
                 
-                # If rate limited (429) or forbidden (403), cooldown this family on this account
-                if status_code in (429, 403):
+                # If rate limited (429), forbidden (403), not found (404), or service error (503), cooldown this family on this account
+                if status_code in (429, 403, 404, 503):
                     with _cache_lock:
                         # Increment consecutive failures
                         failures = _consecutive_failures.get(cooldown_key, 0) + 1

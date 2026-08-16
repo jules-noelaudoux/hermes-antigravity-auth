@@ -2,7 +2,7 @@
 
 Google Antigravity IDE OAuth auth plugin and proxy provider for **Hermes Agent** (developed by Nous Research). This is the **official Hermes version** of the [@mrhisyammm/opencode-antigravity-auth](https://github.com/mrhisyammm/opencode-antigravity-auth) plugin!
 
-Allows you to use Gemini 3.5 Flash, Gemini 3.1 Pro, and Claude 4.6 (Opus/Sonnet) for **FREE** inside Hermes Agent using your Google OAuth credentials pool with **isolated cooldowns** and **exponential backoff auto-rotation**!
+Allows you to use Gemini 3.7 Flash, Gemini 3.7 Flash Thinking, Gemini 3.1 Pro, and Claude 4.6 (Opus/Sonnet) for **FREE** inside Hermes Agent using your Google OAuth credentials pool with **isolated cooldowns** and **exponential backoff auto-rotation**!
 
 ---
 
@@ -23,7 +23,7 @@ Open your terminal and run the command corresponding to your operating system to
 
 ## What You Get (Features)
 
-- **Claude Opus 4.6, Sonnet 4.6** and **Gemini 3.5 Flash / 3.1 Pro / 3 Pro / 3 Flash** via Google OAuth
+- **Gemini 3.7 Flash / 3.7 Flash Thinking**, **Gemini 3.1 Pro / 3 Flash / 2.5 Flash**, and **Claude Opus 4.6 / Sonnet 4.6** via Google OAuth
 - **Self-Contained Proxy**: Runs its own lightweight proxy server locally in the background (`port 8999`), making it 100% plug-and-play without any external software dependencies.
 - **Multi-Account Support**: Add multiple Google accounts; requests auto-rotate dynamically.
 - **Isolated Cooldowns**: Cooldowns are tracked separately per account and model family (`claude` vs `gemini`). If Claude gets rate-limited, you can still use Gemini models on the same account!
